@@ -1,4 +1,5 @@
 import requests
+import getpass
 
 def login_or_signup():
     userId = ""
@@ -10,7 +11,7 @@ def login_or_signup():
 
         if choice == "1":
             username = input("Enter username: ")
-            password = input("Enter password: ")
+            password = getpass.getpass(prompt="Enter password: ")
             response = requests.post("http://localhost:8080/user/login", json={"Username": username, "Password": password})
             
             # print(response.text)
@@ -23,9 +24,11 @@ def login_or_signup():
             else:
                 print("Invalid username or password. Please try again.")
         elif choice == "2":
+            name = input("Enter your name: ")
+            level = input("Enter your level: ")
             username = input("Enter username: ")
-            password = input("Enter password: ")
-            response = requests.post("http://localhost:8080/user/register", json={"Username": username, "Password": password})
+            password = getpass.getpass(prompt="Enter password: ")
+            response = requests.post("http://localhost:8080/user/register", json={"Username": username, "Password": password, "Name": name, "Level": int(level)})
             # print(response.json())
             # print(response.status_code)
             if str(response.status_code)[:2] == '20':
@@ -59,7 +62,6 @@ def book_room(userId):
     else:
         print("No rooms available!")
 
-# Other functions (register_new_room, book_room) remain unchanged
 
 def main():
     userId = login_or_signup()

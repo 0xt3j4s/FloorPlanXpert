@@ -26,12 +26,12 @@ func RegisterUser(c *gin.Context) {
         return
     }
 
-    fmt.Println(newUser)
     _, err := db.GetUserByUsername(newUser.Username)
     if err == nil {
         c.JSON(http.StatusBadRequest, gin.H{"error": "Username already exists"})
         return
     }
+    
 
     // Insert new user into the database
     if err := db.InsertUser(&newUser); err != nil {
@@ -59,7 +59,6 @@ func LoginUser(c *gin.Context) {
         c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         return
     }
-
     
     fmt.Printf("Received User Data: %+v\n", user)
     // Retrieve user from the database
@@ -70,8 +69,7 @@ func LoginUser(c *gin.Context) {
         return
     }
 
-    fmt.Println(existingUser.Password)
-    fmt.Println(user.Password)
+
     // Check if the password is correct
     if user.Password != existingUser.Password {
         c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid username or password"})
