@@ -18,9 +18,3 @@ func InitLogging() {
     log.SetOutput(os.Stdout)
     log.SetFlags(log.LstdFlags | log.Lshortfile)
 }
-
-
-// Placeholder function for handling errors
-func HandleError(err error) {
-    // Implement error handling logic
-}
