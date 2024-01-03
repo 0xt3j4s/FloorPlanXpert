@@ -12,8 +12,6 @@ func SetupRouter() *gin.Engine {
 
 	r.LoadHTMLGlob("./templates/*")
 
-
-    // Example API endpoint
 	r.GET("/", handlers.HomePage)
     r.GET("/user/login-register", func(c *gin.Context) {
         c.HTML(http.StatusOK, "login_register.html", nil)
