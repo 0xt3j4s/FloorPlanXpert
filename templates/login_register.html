@@ -5,24 +5,25 @@
 </head>
 <body>
     <h1>Login</h1>
-    <form action="/user/login" method="POST" enctype="application/json">
+
+    <form action="/user/login" method="POST">
         <label for="username">Username:</label><br>
-        <input type="text" id="username" name="username"><br>
+        <input type="text" id="username" name="Username"><br> <!-- Ensure 'name' attribute matches struct field -->
         <label for="password">Password:</label><br>
-        <input type="password" id="password" name="password"><br><br>
+        <input type="password" id="password" name="Password"><br><br> <!-- Ensure 'name' attribute matches struct field -->
         <input type="submit" value="Login">
     </form>
 
     <hr>
 
     <h1>Register</h1>
-    <form action="/user/register" method="POST">
+    <form action="/user/register" method="POST" enctype="application/json">
         <label for="name">Name:</label><br>
-        <input type="text" id="name" name="name"><br>
-        <label for="new_username">Username:</label><br>
-        <input type="text" id="new_username" name="username"><br>
-        <label for="new_password">Password:</label><br>
-        <input type="password" id="new_password" name="password"><br><br>
+        <input type="text" id="name" name="Name"><br>
+        <label for="username">Username:</label><br>
+        <input type="text" id="username" name="Username"><br>
+        <label for="password">Password:</label><br>
+        <input type="password" id="password" name="Password"><br><br>
         <input type="submit" value="Register">
     </form>
 </body>

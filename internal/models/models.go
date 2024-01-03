@@ -17,8 +17,14 @@ type Room struct {
     RoomID        int
     RoomName      int
     BookingUserID  int
-    lastBookingEndTime time.Time
     Capacity      int
+    Lastbookingendtime time.Time `pg:"lastbookingendtime"`
+}
+
+type BookRoomRequest struct {
+    UserID          int `json:"userID"`
+    RequiredCapacity int `json:"requiredCapacity"`
+    Duration int `json:"duration"`
 }
 
 type Booking struct {

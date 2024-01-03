@@ -18,5 +18,7 @@ func SetupRouter() *gin.Engine {
     })
 	r.POST("/user/register", handlers.RegisterUser)
 	r.POST("/user/login", handlers.LoginUser)
+	r.POST("/rooms/create", handlers.CreateRoom)
+	r.POST("/rooms/book", handlers.BookRoom)
 	return r
 }

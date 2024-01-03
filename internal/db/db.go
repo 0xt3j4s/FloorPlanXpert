@@ -4,6 +4,7 @@ import (
     "fmt"
     "github.com/go-pg/pg/v10"
     "FloorPlanXpert/internal/models"
+    "FloorPlanXpert/internal/utils"
 )
 
 var DB *pg.DB
@@ -36,6 +37,18 @@ func Close() {
 // Insert a new user into the database
 func InsertUser(newUser *models.User) error {
     _, err := DB.Model(newUser).Returning("*").Insert()
+    return err
+}
+
+func InsertRoom(newRoom *models.Room) error {
+    utils.Log("Inserting new room")
+    _, err := DB.Model(newRoom).Returning("*").Insert()
+    return err
+}
+
+func InsertBooking(newBooking *models.Booking) error {
+    utils.Log("Inserting new booking")
+    _, err := DB.Model(newBooking).Returning("*").Insert()
     return err
 }
 
