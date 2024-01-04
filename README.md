@@ -83,4 +83,8 @@ python app.py
 11. Follow the instructions on the CLI Tool to create a new room or book a room.
 
 ## Outputs
+1. Running the Go server
+   ![image](https://github.com/0xt3j4s/FloorPlanXpert/assets/75741089/cb354f5c-3d05-4b8f-afdb-22dd618498c2)
 
+2. CLI Tool
+   ![image](https://github.com/0xt3j4s/FloorPlanXpert/assets/75741089/d6b268c8-4cab-47bf-8ce2-a4c9792ea0d1)
