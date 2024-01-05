@@ -30,6 +30,6 @@ type BookRoomRequest struct {
 type Booking struct {
     UserID         int
     RoomID         int
-    StartTime  time.Time
-    EndTime    time.Time
+    StartTime  string
+    EndTime    string
 }

@@ -5,7 +5,7 @@ import (
     "os"
 )
 
-func Log(message string) {
+func Log(message interface{}) {
     log.Println(message)
 }
 
