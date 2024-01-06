@@ -4,7 +4,7 @@ import (
 	"FloorPlanXpert/internal/db"
 	"FloorPlanXpert/internal/models"
 	"FloorPlanXpert/internal/utils"
-	// "fmt"
+	"fmt"
 	"net/http"
 	"time"
 	"github.com/gin-gonic/gin"
@@ -100,80 +100,34 @@ func LoginUser(c *gin.Context, user models.User, resultChan chan<- bool) {
     }
 }
 
+func CreateRoom(c *gin.Context) {
+    utils.Log("Received a request to create a room.")
+    // Decode the request body to extract room details
+    var newRoom models.Room
 
-func CreateRoom(c *gin.Context, newRoom models.Room, resultChan chan<- bool) {
-    
+    newRoom.BookingUserID = 0;
+    newRoom.Lastbookingendtime = time.Time{}
+
+    if err := c.ShouldBindJSON(&newRoom); err != nil {
+        utils.LogError(err)
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    fmt.Println(newRoom)
     if newRoom.RoomName != 0 && newRoom.Capacity != 0 {
-        go func ()  {
-
-            if err := db.InsertRoom(&newRoom); err != nil {
-                utils.LogError(err)
-                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-                resultChan <- false // Indicate failure through the channel
-                return
-            }
-        }()
+        if err := db.InsertRoom(&newRoom); err != nil {
+            utils.LogError(err)
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+            return
+        }
     } else {
         c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid room details"})
-        resultChan <- false // Indicate failure through the channel
         return
     }
     
     c.JSON(http.StatusCreated, gin.H{"message": "Room created successfully!"})
-    resultChan <- true // Indicate success through the channel
 }
-
-// func BookRoom(c *gin.Context) {
-//     var req models.BookRoomRequest
-//     if err := c.ShouldBindJSON(&req); err != nil {
-//         c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-//         return
-//     }
-
-//     if ((req.RequiredCapacity == 0 || req.Duration == 0) && req.StartTime[] {
-//         c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid booking details"})
-//         return
-//     }
-
-//     currentTime := time.Now()
-
-//     // Fetch rooms matching the criteria from the database
-//     var rooms []models.Room
-//     err := db.DB.Model(&rooms).
-//         Where("capacity >= ?", req.RequiredCapacity).
-//         Where("lastbookingendtime IS NULL OR lastbookingendtime < ?", currentTime).
-//         Order("capacity ASC").
-//         Select()
-
-//     if err != nil {
-//         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch rooms"})
-//         return
-//     }
-
-//     // Check if there are available rooms
-//     if len(rooms) == 0 {
-//         c.JSON(http.StatusNotFound, gin.H{"error": "No available rooms matching the criteria"})
-//         return
-//     }
-
-//     // Update the first room from the fetched list
-//     roomToUpdate := rooms[0]
-//     roomToUpdate.Lastbookingendtime = currentTime.Add(time.Minute * time.Duration(req.Duration))
-//     roomToUpdate.BookingUserID = req.UserID
-
-//     _, err = db.DB.Model(&roomToUpdate).
-//         Where("room_id = ?", roomToUpdate.RoomID).
-//         Column("lastbookingendtime", "booking_user_id").
-//         Update()
-
-//     if err != nil {
-//         utils.LogError(err)
-//         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to book the room"})
-//         return
-//     }
-
-//     c.JSON(http.StatusOK, gin.H{"message": "Room booked successfully", "roomName": roomToUpdate.RoomName})
-// }
 
 func BookRoom(c *gin.Context) {
     var req models.BookRoomRequest
@@ -181,11 +135,6 @@ func BookRoom(c *gin.Context) {
         c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         return
     }
-
-    // if req.RequiredCapacity == 0 || req.Duration == 0 {
-    //     c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid booking details"})
-    //     return
-    // }
 
     currentTime := time.Now()
 

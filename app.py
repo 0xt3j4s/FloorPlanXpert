@@ -52,13 +52,11 @@ class Room:
             print("Error registering room.")
 
     @staticmethod
-    def book(user_id):
+    def book(userId):
         capacity = int(input("Enter required capacity: "))
-        start_time = input("Enter start time (in HH:MM format): ")
-        duration = int(input("Enter required duration (in hrs): "))
-        end_time = str(int(start_time[:2]) + duration) + start_time[2:]
+        duration = int(input("Enter required duration (in minutes): "))
 
-        response = requests.post("http://localhost:8080/rooms/book", json={"requiredCapacity": int(capacity), "userID": int(user_id), "duration": int(duration)})
+        response = requests.post("http://localhost:8080/rooms/book", json={"requiredCapacity": int(capacity), "userID": int(userId), "duration": int(duration)})
         if str(response.status_code)[:2] == '20':
             booked_room = response.json()['roomName']
             print(f"Room {booked_room} booked successfully!")

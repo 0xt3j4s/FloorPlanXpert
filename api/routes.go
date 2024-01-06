@@ -1,7 +1,6 @@
 package api
 
 import (
-	"time"
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"FloorPlanXpert/internal/handlers"
@@ -67,36 +66,8 @@ func SetupRouter() *gin.Engine {
 		}
 	})
 	
-    r.POST("/rooms/create", func(c *gin.Context) {
-        // Handle room creation in a Goroutine
-        newRoom := models.Room{} // Initialize room struct
-		if err := c.ShouldBind(&newRoom); err != nil {
-			utils.LogError(err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		resultChan := make(chan bool)
-
-		newRoom.BookingUserID = 0;
-    	newRoom.Lastbookingendtime = time.Time{}
-
-		// Call CreateRoom in a Goroutine
-		go handlers.CreateRoom(c, newRoom, resultChan)
-
-		// Wait for the result from CreateRoom
-		result := <-resultChan
-
-		// Handle the result accordingly
-		if !result {
-			// Handle the scenario where the room creation failed
-			utils.Log("Room creation failed")
-			return
-		}
-    })
-    r.POST("/rooms/book", func(c *gin.Context) {
-        // Handle room booking in a Goroutine
-        go handlers.BookRoom(c)
-    })
+	r.POST("/rooms/create", handlers.CreateRoom)
+	r.POST("/rooms/book", handlers.BookRoom)
 
 	return r
 }
