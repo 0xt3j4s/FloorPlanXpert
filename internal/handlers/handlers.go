@@ -15,70 +15,90 @@ func HomePage(c *gin.Context) {
     c.HTML(http.StatusOK, "index.html", nil)
 }
 
+func RegisterUser(c *gin.Context, newUser models.User, resultChan chan<- bool) {
+    // Make two channels to receive the user data and errors
+    existingUserCh := make(chan *models.User)
+    errorCh := make(chan error)
+    errorCh2 := make(chan error)
 
-func RegisterUser(c *gin.Context) {
-    utils.Log("Received a request to register a user.")
-    // Decode the request body to extract user registration details
-    var newUser models.User
-    if err := c.ShouldBindJSON(&newUser); err != nil {
-        utils.LogError(err)
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+    go func()  {
+        existingUser, err := db.GetUserByUsername(newUser.Username)
+        if err == nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": "Username already exists"})
+            existingUserCh <- existingUser
+            return
+        } else {
+            errorCh <- err
+            return
+        }
+    }()
+
+
+    // Wait for either the existingUser or an error
+    select {
+    case existingUser := <-existingUserCh:
+        c.JSON(http.StatusBadRequest, gin.H{"error": existingUser.Username + " already exists"})
+        resultChan <- false // Indicate failure through the channel
         return
-    }
 
-    _, err := db.GetUserByUsername(newUser.Username)
-    if err == nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "Username already exists"})
-        return
+    case err := <-errorCh: 
+        utils.Log(err)
+        go func ()  {
+            // wait for insert user
+            if err := db.InsertUser(&newUser); err != nil {
+                errorCh2 <- err
+                return
+            }
+        }()
+        // if no error return successful
+        select {
+        case err := <-errorCh2:
+            utils.LogError(err)
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+            resultChan <- false // Indicate failure through the channel
+            return
+        default:
+            c.JSON(http.StatusCreated, gin.H{"message": "User registered successfully!", "userID": newUser.UserID})
+            resultChan <- true // Indicate success through the channel
+            return
+        }
     }
-    
-
-    // Insert new user into the database
-    if err := db.InsertUser(&newUser); err != nil {
-        utils.LogError(err)
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
-
-    existingUser, err := db.GetUserByUsername(newUser.Username)
-    if err != nil {
-        utils.LogError(err)
-        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid username or password"})
-        return
-    }
-
-    c.JSON(http.StatusCreated, gin.H{"message": "User registered successfully!", "userID": existingUser.UserID})
 }
 
-func LoginUser(c *gin.Context) {
-    utils.Log("Received a request to login a user.")
-    // Decode the request body to extract user login details
-    var user models.User
-    if err := c.ShouldBind(&user); err != nil {
-        utils.LogError(err)
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
-    
-    fmt.Printf("Received User Data: %+v\n", user)
-    // Retrieve user from the database
-    existingUser, err := db.GetUserByUsername(user.Username)
-    if err != nil {
+
+func LoginUser(c *gin.Context, user models.User, resultChan chan<- bool) {
+    existingUserCh := make(chan *models.User) // Channel to receive the user data
+    errorCh := make(chan error) // Channel to receive errors
+
+    // Perform the database query within a Goroutine
+    go func() {
+        existingUser, err := db.GetUserByUsername(user.Username)
+        if err != nil {
+            errorCh <- err
+            return
+        }
+        existingUserCh <- existingUser
+    }()
+
+    // Wait for either the existingUser or an error
+    select {
+    case existingUser := <-existingUserCh:
+        // Check password and proceed accordingly
+        if user.Password != existingUser.Password {
+            c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid username or password"})
+            resultChan <- false // Indicate failure through the channel
+            return
+        }
+        c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully!", "userID": existingUser.UserID})
+        resultChan <- true // Indicate success through the channel
+
+    case err := <-errorCh:
         utils.LogError(err)
         c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid username or password"})
+        resultChan <- false // Indicate failure through the channel
         return
     }
-
-
-    // Check if the password is correct
-    if user.Password != existingUser.Password {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid username or password"})
-        return
-    }
-
-    c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully!", "userID": existingUser.UserID})
 }
-
 
 func CreateRoom(c *gin.Context) {
     utils.Log("Received a request to create a room.")
